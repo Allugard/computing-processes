@@ -12,7 +12,7 @@ public class Main {
         allocator.dump();
         System.out.println();
 
-        allocator.memoryAlloc(91);
+        allocator.memoryAlloc(87);
         System.out.println();
         allocator.dump();
 

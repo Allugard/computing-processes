@@ -48,7 +48,7 @@ public class Allocator {
 
         freeMemoryBlocks.remove(buf);
 
-        if(!(buf.getSize()-size<1)){
+        if(!(buf.getSize()-size<4)){
             int nextAddress=buf.getAddress()+size;
             MemoryBlock newMemoryBlock= new MemoryBlock(buf.getSize()-size, nextAddress);
             memory[nextAddress]=0;
@@ -59,38 +59,32 @@ public class Allocator {
 
             freeMemoryBlocks.add(newMemoryBlock);
             memoryBlocks.add(newMemoryBlock);
-//            System.out.println(newMemoryBlock);
-
-
 
             memoryBlocks.remove(buf);
             memory[buf.getAddress()+2]=size-3;
             buf.setSize(size);
             memoryBlocks.add(buf);
-        }else {
-            memory[buf.getAddress()+2]=size-3;
         }
 
         memory[buf.getAddress()]=1;
 
-//        System.out.println(buf);
         return buf.getAddress();
     }
 
     public void memoryFree(int address){
-//        memoryBlocks.g
+
     }
 
 
 
 
     public void dump(){
-        System.out.println("Memory Blocks");
+        System.out.println("Memory Blocks:");
         for (MemoryBlock memoryBlock:memoryBlocks
              ) {
             System.out.println(memoryBlock);
         }
-        System.out.println("Free Memory Blocks");
+        System.out.println("Free Memory Blocks:");
         for (MemoryBlock memoryBlock:freeMemoryBlocks
                 ) {
             System.out.println(memoryBlock);
