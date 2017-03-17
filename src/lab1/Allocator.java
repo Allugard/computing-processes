@@ -138,6 +138,45 @@ public class Allocator {
         freeMemoryBlocks.add(current);
     }
 
+    public int memoryRealloc(int address, int size){
+        MemoryBlock curMemoryBlock=memoryBlocks.ceiling(new MemoryBlock(0,address));
+        if (size>memory[address+2]){
+            int newAddress=memoryAlloc(size);
+            if (newAddress>0){
+//                memoryBlocks.remove(curMemoryBlock);
+//                memory[address]=0;
+//                memory[address+1]=0;
+//                memory[address+2]=0;
+
+                memoryFree(address);
+                return newAddress;
+            }
+        }else {
+            if(memory[address+2]-size<4){
+                return address;
+            }else {
+                memoryBlocks.remove(curMemoryBlock);
+                memory[address+5]=memory[address+2]-size;
+                curMemoryBlock.setSize(size+3);
+                memory[address+2]=size;
+                memory[address+3]=0;
+                memory[address+4]=size+3;
+                MemoryBlock newMemoryBlock=new MemoryBlock(memory[address+5],address+curMemoryBlock.getSize());
+                memoryBlocks.add(newMemoryBlock);
+                memoryBlocks.add(curMemoryBlock);
+                freeMemoryBlocks.add(newMemoryBlock);
+
+                memory[newMemoryBlock.getAddress()+newMemoryBlock.getSize()+1]=newMemoryBlock.getSize();
+
+            }
+
+
+        }
+
+
+        return 1;
+    }
+
     void print(){
         for (int i = 0; i <memory.length ; i++) {
             System.out.print(memory[i]+" ");
