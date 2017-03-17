@@ -72,11 +72,77 @@ public class Allocator {
     }
 
     public void memoryFree(int address){
+        MemoryBlock current = memoryBlocks.ceiling(new MemoryBlock(0,address));
+        memory[address]=0;
 
+        if (memory[address+current.getSize()]==0 && memory[address-memory[address+1]]==0){
+            MemoryBlock nextFree = memoryBlocks.ceiling(new MemoryBlock(0,address+current.getSize()));
+            MemoryBlock prevFree = memoryBlocks.ceiling(new MemoryBlock(0,address-memory[address+1]));
+
+            freeMemoryBlocks.remove(nextFree);
+            freeMemoryBlocks.remove(prevFree);
+            memoryBlocks.remove(nextFree);
+            memoryBlocks.remove(prevFree);
+            memoryBlocks.remove(current);
+
+            memory[address-prevFree.getSize()+2]+=current.getSize()+nextFree.getSize();
+            prevFree.setSize(memory[address-prevFree.getSize()+2]+3);
+
+            memory[nextFree.getAddress()+nextFree.getSize()+1]=prevFree.getSize();
+            memory[nextFree.getAddress()+2]=0;
+            memory[nextFree.getAddress()+1]=0;
+            memory[current.getAddress()+2]=0;
+            memory[current.getAddress()+1]=0;
+
+
+            memoryBlocks.add(prevFree);
+            freeMemoryBlocks.add(prevFree);
+            return;
+        }
+
+            if (memory[address+current.getSize()]==0){
+            MemoryBlock nextFree = memoryBlocks.ceiling(new MemoryBlock(0,address+current.getSize()));
+
+            memory[address+2]+=nextFree.getSize();
+
+            memory[nextFree.getAddress()+2]=0;
+            memory[nextFree.getAddress()+1]=0;
+
+
+            memoryBlocks.remove(nextFree);
+            freeMemoryBlocks.remove(nextFree);
+
+            memoryBlocks.remove(current);
+            current.setSize(memory[address+2]+3);
+            memory[nextFree.getAddress()+nextFree.getSize()+1]=current.getSize();
+            memoryBlocks.add(current);
+            freeMemoryBlocks.add(current);
+            return;
+        }
+
+        if (memory[address-memory[address+1]]==0){
+            MemoryBlock prevFree = memoryBlocks.ceiling(new MemoryBlock(0,address-memory[address+1]));
+
+            memory[address-prevFree.getSize()+2]+=current.getSize();
+            memory[address+current.getSize()+1]+=prevFree.getSize();
+
+            memoryBlocks.remove(current);
+            memoryBlocks.remove(prevFree);
+            freeMemoryBlocks.remove(prevFree);
+            prevFree.setSize(memory[address-prevFree.getSize()+2]+3);
+            memoryBlocks.add(prevFree);
+            freeMemoryBlocks.add(prevFree);
+            return;
+        }
+
+        freeMemoryBlocks.add(current);
     }
 
-
-
+    void print(){
+        for (int i = 0; i <memory.length ; i++) {
+            System.out.print(memory[i]+" ");
+        }
+    }
 
     public void dump(){
         System.out.println("Memory Blocks:");
