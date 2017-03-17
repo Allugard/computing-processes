@@ -143,11 +143,6 @@ public class Allocator {
         if (size>memory[address+2]){
             int newAddress=memoryAlloc(size);
             if (newAddress>0){
-//                memoryBlocks.remove(curMemoryBlock);
-//                memory[address]=0;
-//                memory[address+1]=0;
-//                memory[address+2]=0;
-
                 memoryFree(address);
                 return newAddress;
             }
@@ -156,17 +151,21 @@ public class Allocator {
                 return address;
             }else {
                 memoryBlocks.remove(curMemoryBlock);
-                memory[address+5]=memory[address+2]-size;
+                memory[address+size+3+2]=memory[address+2]-size-3;
                 curMemoryBlock.setSize(size+3);
                 memory[address+2]=size;
-                memory[address+3]=0;
-                memory[address+4]=size+3;
-                MemoryBlock newMemoryBlock=new MemoryBlock(memory[address+5],address+curMemoryBlock.getSize());
+                memory[address+size]=0;
+                memory[address+size+3+1]=curMemoryBlock.getSize();
+                MemoryBlock newMemoryBlock=new MemoryBlock(memory[address+size+3+2]+3,address+curMemoryBlock.getSize());
                 memoryBlocks.add(newMemoryBlock);
                 memoryBlocks.add(curMemoryBlock);
                 freeMemoryBlocks.add(newMemoryBlock);
 
                 memory[newMemoryBlock.getAddress()+newMemoryBlock.getSize()+1]=newMemoryBlock.getSize();
+
+                if(memory[newMemoryBlock.getAddress()+newMemoryBlock.getSize()]==0){
+                    memoryFree(newMemoryBlock.getAddress());
+                }
 
             }
 
