@@ -9,6 +9,8 @@ public class Allocator {
     private TreeSet<MemoryBlock> memoryBlocks;
     private TreeSet<MemoryBlock> freeMemoryBlocks;
     private int [] memory;
+    private Random r=new Random();
+    private int sum;
 
     public Allocator(int size){
         if (size<10){
@@ -41,7 +43,7 @@ public class Allocator {
     }
 
 
-    public int memoryAlloc(int size){
+    public int memoryAlloc(int size, boolean fill){
         size+=3;
         MemoryBlock buf=freeMemoryBlocks.ceiling(new MemoryBlock(size,0));
         if (buf==null) return -1;
@@ -68,12 +70,26 @@ public class Allocator {
 
         memory[buf.getAddress()]=1;
 
+        if(fill){
+            for (int i = buf.getAddress()+3; i <buf.getAddress()+buf.getSize(); i++) {
+                memory[i]=r.nextInt(10);
+                sum+=memory[i];
+            }
+        }
+
         return buf.getAddress();
     }
 
-    public void memoryFree(int address){
+    public int memoryFree(int address){
         MemoryBlock current = memoryBlocks.ceiling(new MemoryBlock(0,address));
         memory[address]=0;
+        int deletedData=0;
+
+        for (int i = address+3; i <address+memory[address+2]+3; i++) {
+            sum-=memory[i];
+            deletedData+=memory[i];
+            memory[i]=0;
+        }
 
         if (memory[address+current.getSize()]==0 && memory[address-memory[address+1]]==0){
             MemoryBlock nextFree = memoryBlocks.ceiling(new MemoryBlock(0,address+current.getSize()));
@@ -97,7 +113,7 @@ public class Allocator {
 
             memoryBlocks.add(prevFree);
             freeMemoryBlocks.add(prevFree);
-            return;
+            return deletedData;
         }
 
             if (memory[address+current.getSize()]==0){
@@ -117,7 +133,7 @@ public class Allocator {
             memory[nextFree.getAddress()+nextFree.getSize()+1]=current.getSize();
             memoryBlocks.add(current);
             freeMemoryBlocks.add(current);
-            return;
+            return deletedData;
         }
 
         if (memory[address-memory[address+1]]==0){
@@ -132,17 +148,22 @@ public class Allocator {
             prevFree.setSize(memory[address-prevFree.getSize()+2]+3);
             memoryBlocks.add(prevFree);
             freeMemoryBlocks.add(prevFree);
-            return;
+            return deletedData;
         }
 
         freeMemoryBlocks.add(current);
+        return deletedData;
     }
 
     public int memoryRealloc(int address, int size){
         MemoryBlock curMemoryBlock=memoryBlocks.ceiling(new MemoryBlock(0,address));
         if (size>memory[address+2]){
-            int newAddress=memoryAlloc(size);
+            int newAddress=memoryAlloc(size, false);
             if (newAddress>0){
+                for (int i = address+3,j=1; i < address+memory[address+2]+3; i++,j++) {
+                    memory[newAddress+2+j]=memory[i];
+                    sum+=memory[i];
+                }
                 memoryFree(address);
                 return newAddress;
             }
@@ -150,11 +171,17 @@ public class Allocator {
             if(memory[address+2]-size<4){
                 return address;
             }else {
+                int deletedData=0;
+               for (int i = address+size+3; i <address+size+6; i++) {
+                   sum-=memory[i];
+                   deletedData+=memory[i];
+                }
+
+
                 memoryBlocks.remove(curMemoryBlock);
                 memory[address+size+3+2]=memory[address+2]-size-3;
                 curMemoryBlock.setSize(size+3);
                 memory[address+2]=size;
-                memory[address+size]=0;
                 memory[address+size+3+1]=curMemoryBlock.getSize();
                 MemoryBlock newMemoryBlock=new MemoryBlock(memory[address+size+3+2]+3,address+curMemoryBlock.getSize());
                 memoryBlocks.add(newMemoryBlock);
@@ -164,22 +191,19 @@ public class Allocator {
                 memory[newMemoryBlock.getAddress()+newMemoryBlock.getSize()+1]=newMemoryBlock.getSize();
 
                 if(memory[newMemoryBlock.getAddress()+newMemoryBlock.getSize()]==0){
-                    memoryFree(newMemoryBlock.getAddress());
+                    deletedData+=memoryFree(newMemoryBlock.getAddress());
                 }
-
+                System.out.println("Wasted data="+deletedData);
             }
-
-
         }
-
-
-        return 1;
+        return address;
     }
 
     void print(){
         for (int i = 0; i <memory.length ; i++) {
             System.out.print(memory[i]+" ");
         }
+        System.out.println();
     }
 
     public void dump(){
@@ -195,6 +219,9 @@ public class Allocator {
         }
     }
 
+    public void checkSum(){
+        System.out.println("Checksum="+sum);
+    }
 
     class MemoryBlock{
         private int size;

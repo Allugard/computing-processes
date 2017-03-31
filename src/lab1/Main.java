@@ -1,5 +1,7 @@
 package lab1;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -8,15 +10,18 @@ import java.util.TreeSet;
  */
 public class Main {
     public static void main(String[] args) {
+        List <Integer> address=new ArrayList<>();
         Allocator allocator=new Allocator(100);
         allocator.dump();
-        allocator.memoryAlloc(10);
 
-        allocator.dump();
-        allocator.memoryRealloc(3,4);
-        System.out.println();
-        allocator.dump();
-        allocator.print();
+        address.add(allocator.memoryAlloc(10,true));
+        allocator.checkSum();
+//        allocator.print();
+        allocator.memoryRealloc(address.get(0),5);
+//        allocator.print();
+        allocator.checkSum();
+
+
 
     }
 }
