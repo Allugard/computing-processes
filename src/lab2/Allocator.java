@@ -92,10 +92,14 @@ public class Allocator {
                     position = nextPos;
                     memory[position] = 1;
                 }
-
             }
             return position;
         }
+    }
+
+    public int realloc(int pos, int size){
+        free(pos);
+        return alloc(size);
     }
 
     public void dump(){
