@@ -1,5 +1,8 @@
 package lab3;
 
+import java.util.HashMap;
+import java.util.TreeMap;
+
 /**
  * Created by allugard on 18.05.17.
  */
@@ -10,12 +13,28 @@ public class Statistics {
     private double execTime;
     private double allTime;
     private double curTime;
+    private TreeMap<Integer, Integer> timeNumberTask;
 
     private Statistics() {
+        timeNumberTask = new TreeMap<>();
     }
 
     public static Statistics getInstance() {
         return statistics;
+    }
+
+    public TreeMap<Integer, Integer> getTimeNumberTask() {
+        return timeNumberTask;
+    }
+
+    public void addTimeNumberTask(double time){
+        if(timeNumberTask.containsKey((int)time)){
+            int a = timeNumberTask.get((int)time);
+            a++;
+            timeNumberTask.put((int)time, a);
+        }else {
+            timeNumberTask.put((int)time, 1);
+        }
     }
 
     public int getN() {
@@ -68,6 +87,13 @@ public class Statistics {
 
     public void setCurTime(double curTime) {
         this.curTime = curTime;
+    }
+
+    public void setNull(){
+        timeInQueue = 0;
+        execTime = 0;
+        allTime = 0;
+        curTime = 0;
     }
 
     @Override

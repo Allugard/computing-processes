@@ -5,15 +5,11 @@ package lab3;
  */
 public class Task {
     private double startedTime;
-    private double remainingExecutionTime;
     private final double execTime;
-    private int length;
 
-    public Task(double startedTime, double remainingExecutionTime, int length) {
+    public Task(double startedTime, double execTime) {
         this.startedTime = startedTime;
-        this.remainingExecutionTime = remainingExecutionTime;
-        this.length = length;
-        execTime = remainingExecutionTime;
+        this.execTime = execTime;
     }
 
     public double getStartedTime() {
@@ -24,21 +20,6 @@ public class Task {
         this.startedTime = startedTime;
     }
 
-    public double getRemainingExecutionTime() {
-        return remainingExecutionTime;
-    }
-
-    public void setRemainingExecutionTime(double remainingExecutionTime) {
-        this.remainingExecutionTime = remainingExecutionTime;
-    }
-
-    public int getLength() {
-        return length;
-    }
-
-    public void setLength(int length) {
-        this.length = length;
-    }
 
     public double getExecTime() {
         return execTime;

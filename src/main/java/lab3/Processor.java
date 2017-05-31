@@ -7,16 +7,10 @@ import static java.lang.Double.POSITIVE_INFINITY;
  */
 public class Processor {
     private Task task;
-    private double quantumTime;
 
 
-    public void setTask(Task task, double quantumTime) {
+    public void setTask(Task task) {
         this.task = task;
-        if(quantumTime < task.getRemainingExecutionTime()) {
-            this.quantumTime = quantumTime;
-        }else {
-            this.quantumTime = task.getRemainingExecutionTime();
-        }
     }
 
     public void nullTask(){
@@ -31,14 +25,12 @@ public class Processor {
     public Task getTask(){
         return task;
     }
-    public double getQuantumTime(){
+
+    public double getTime(){
         if(task==null){
             return POSITIVE_INFINITY;
         }
-        return quantumTime;
+        return task.getExecTime();
     }
 
-    public void setQuantumTime(double quantumTime) {
-        this.quantumTime = quantumTime;
-    }
 }

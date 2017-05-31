@@ -5,16 +5,11 @@ package lab3;
  */
 public class QueueManagementSystem {
 
-
-    private double lambda;
-    private double mu;
     private int n;
     private static Generator g;
     private Processor processor;
     private Queue queue;
     public QueueManagementSystem(double lambda, double mu, int n) {
-        this.lambda = lambda;
-        this.mu = mu;
         this.n = n;
         g = new Generator(lambda,mu);
         processor = new Processor();
@@ -23,45 +18,54 @@ public class QueueManagementSystem {
 
 
     public void start() {
-        double curTime = 0.0;
-        int currentNumberTask = 0;
-        double nextTaskTime = curTime + g.getNextTime();
-        Task task = new Task(curTime, g.getExecutionTime(), g.lengthTask());
-        queue.addTask(task);
-        processor.setTask(task, 1/g.getMu());
-        while (currentNumberTask < n){
-            if(nextTaskTime < curTime + processor.getQuantumTime()){
-                processor.setQuantumTime(processor.getQuantumTime() - nextTaskTime + curTime);
-                curTime = nextTaskTime;
-                nextTaskTime = curTime + g.getNextTime();
-                task = new Task(curTime, g.getExecutionTime(), g.lengthTask());
-                queue.addTask(task);
+        double time = 0.0;
+        Task task = new Task(time, g.getExecutionTime());
+        processor.setTask(task);
+        double generationTime = g.getNextTime();
+
+        int numTask=0;
+        while (numTask < n || !queue.isEmpty() || processor.isEmpty()){
+//            System.out.println(time);
+//            System.out.println(generationTime);
+//            System.out.println(time + processor.getTime());
+//            System.out.println(processor.getTime());
+//            System.out.println("---------------------------------------------------------------------");
+            if(generationTime < time + processor.getTime()){
+                time = generationTime;
+//                statistic.incTasks();
+                queue.addTask(new Task(time, g.getExecutionTime()));
+                generationTime = time + g.getNextTime();
                 if(processor.isEmpty()){
-                    processor.setTask(task, ((double) queue.getIndex(task)));
+                    task= queue.getTask();
+                    processor.setTask(task);
                 }
-                currentNumberTask++;
+                numTask++;
+                if(numTask == n ){
+                    generationTime = Double.POSITIVE_INFINITY;
+                }
             }else {
-                curTime = curTime+processor.getQuantumTime();
-                Task processorTask = processor.getTask();
-                processorTask.setRemainingExecutionTime(processorTask.getRemainingExecutionTime() - processorTask.getRemainingExecutionTime());
-                if (processorTask.getRemainingExecutionTime() == 0.){
-                    Statistics.getInstance().addAllTime(curTime - processorTask.getStartedTime());
-                    Statistics.getInstance().addExecTime(processorTask.getExecTime());
-                    Statistics.getInstance().addTimeInQueue(curTime - processorTask.getStartedTime() - processorTask.getExecTime());
-                    queue.remove(processorTask);
-                }else {
-                    queue.next(processorTask);
-                }
+                time += processor.getTime();
+//                statistic.incEndedTasks();
+//                processor.getTask().close(time);
+                Statistics.getInstance().addAllTime(time - processor.getTime());
+                Statistics.getInstance().addExecTime(processor.getTime());
+                Statistics.getInstance().addTimeInQueue(time - processor.getTask().getStartedTime() - processor.getTime());
+                double a = time - processor.getTime();
+                a = time - processor.getTask().getStartedTime();
+//                System.out.println(a);
+                Statistics.getInstance().addTimeNumberTask(a);
+//                System.out.println("time" + time);
+//                System.out.println("started" + processor.getTask().getStartedTime());
+//                System.out.println("exec" + processor.getTask().getExecTime());
+//                System.out.println("-----------------------------------------------------------");
+                processor.nullTask();
                 if(!queue.isEmpty()){
-                    task = queue.getTask();
-                    processor.setTask(task, ((double) queue.getIndex(task)));
-                }else {
-                    processor.nullTask();
+                    task=queue.getTask();
+                    processor.setTask(task);
                 }
             }
         }
-//        Statistics.getInstance().setTimeInQueue();
-        Statistics.getInstance().setCurTime(curTime);
+        Statistics.getInstance().setCurTime(time);
 
     }
 }

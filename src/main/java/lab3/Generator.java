@@ -22,8 +22,8 @@ public class Generator {
     }
 
     public double getExecutionTime(){
-        double rand=r.nextDouble();
-        return (-1/mu)*Math.log(rand);
+//        double rand=r.nextDouble();
+        return 1+r.nextInt(10);
     }
 
     public double getMu() {
